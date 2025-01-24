@@ -166,7 +166,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 
 		metrics = append(metrics, map[string]interface{}{
 			"node":        node.Node,
-			"cpu_usage":   status.CPU * 100,
+			"cpu_usage":   status.CPU,
 			"ram_usage":   float64(status.RAM.Used) / float64(status.RAM.Total) * 100,
 			"vms_running": vmsRunning,
 			"vms_stopped": vmsTotal - vmsRunning,
