@@ -23,7 +23,6 @@ install_go() {
 # Demander les informations Proxmox à l'utilisateur
 configure_proxmox() {
     default_url="https://localhost:8006/api2/json"
-
     echo "Configuration des identifiants Proxmox..."
     read -rp "Entrez l'URL de l'API Proxmox (par défaut : $default_url): " proxmox_url
     proxmox_url=${proxmox_url:-$default_url}
