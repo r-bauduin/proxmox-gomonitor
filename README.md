@@ -50,3 +50,17 @@ systemctl restart proxmox-monitor
 ```bash
 journalctl -u proxmox-monitor -f
 ```
+
+## Utilisation 
+```bash
+curl http://{IP}:59720/status
+```
+
+```json
+[{"cpu_usage":0.106772891134822,"lxc_ratio_up":0,"lxc_running":0,"lxc_stopped":0,"lxc_total":0,"node":"lame-68","ram_usage":60.367929748335044,"vms_ratio_up":50,"vms_running":10,"vms_stopped":10,"vms_total":20}]
+```
+
+Le service gère également les serveurs Proxmox avec plusieurs noeuds :
+```json
+[{"cpu_usage":0.190528034839412,"lxc_ratio_up":75,"lxc_running":3,"lxc_stopped":1,"lxc_total":4,"node":"sql-2","ram_usage":17.19418133700936,"vms_ratio_up":100,"vms_running":1,"vms_stopped":0,"vms_total":1},{"cpu_usage":0.258928091458061,"lxc_ratio_up":80,"lxc_running":4,"lxc_stopped":1,"lxc_total":5,"node":"sql-1","ram_usage":48.70376346508337,"vms_ratio_up":80,"vms_running":8,"vms_stopped":2,"vms_total":10}]
+```
