@@ -13,7 +13,7 @@ install_go() {
     else
         echo "Installation de Go..."
         wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz -O /tmp/go.tar.gz
-        sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+        tar -C /usr/local -xzf /tmp/go.tar.gz
         export PATH=$PATH:/usr/local/go/bin
         echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
         echo "Go a été installé."
@@ -22,11 +22,13 @@ install_go() {
 
 # Demander les informations Proxmox à l'utilisateur
 configure_proxmox() {
+    default_url="https://localhost:8006/api2/json"
     echo "Configuration des identifiants Proxmox..."
-    read -rp "Entrez l'URL de l'API Proxmox (ex: https://localhost:8006/api2/json): " proxmox_url
+    read -rp "Entrez l'URL de l'API Proxmox (par défaut : $default_url): " proxmox_url
+    proxmox_url=${proxmox_url:-$default_url}
+
     read -rp "Entrez le Token API Proxmox (ex: PVEAPIToken=root@pam!api=<token>): " proxmox_token
 
-    # Remplacer les variables dans main.go
     sed -i "s|baseURL  = .*|baseURL  = \"$proxmox_url\"|" main.go
     sed -i "s|apiToken = .*|apiToken = \"$proxmox_token\"|" main.go
 
@@ -39,7 +41,7 @@ compile_project() {
     go build -o proxmox-monitor main.go
     if [ $? -eq 0 ]; then
         echo "Le projet a été compilé avec succès. L'exécutable est disponible sous le nom 'proxmox-monitor'."
-        sudo mv proxmox-monitor /usr/local/bin/
+        mv proxmox-monitor /usr/local/bin/
     else
         echo "Erreur lors de la compilation du projet."
         exit 1
@@ -49,7 +51,7 @@ compile_project() {
 # Configurer le service systemd
 setup_service() {
     echo "Création du service systemd..."
-    sudo bash -c 'cat > /etc/systemd/system/proxmox-monitor.service <<EOF
+    bash -c 'cat > /etc/systemd/system/proxmox-monitor.service <<EOF
 [Unit]
 Description=Proxmox Monitor Service
 After=network.target
@@ -65,9 +67,9 @@ WantedBy=multi-user.target
 EOF'
 
     # Recharger systemd et activer le service
-    sudo systemctl daemon-reload
-    sudo systemctl enable proxmox-monitor
-    sudo systemctl start proxmox-monitor
+    systemctl daemon-reload
+    systemctl enable proxmox-monitor
+    systemctl start proxmox-monitor
 
     echo "Service Proxmox Monitor configuré et démarré."
 }
