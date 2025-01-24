@@ -146,7 +146,10 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 			"node":        node.Node,
 			"cpu_usage":   status.CPU * 100,
 			"ram_usage":   float64(status.RAM.Used) / float64(status.RAM.Total) * 100,
-			"percent_vms": (float64(running) / float64(total)) * 100,
+			"vms_running": running,
+			"vms_stopped": total - running,
+			"vms_total":   total,
+			"vms_ratio_up": (float64(running) / float64(total)) * 100,
 		})
 	}
 
