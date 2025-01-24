@@ -23,7 +23,7 @@ type NodeStatus struct {
 }
 
 type VM struct {
-	VMID   int    `json:"vmid"`
+	VMID   string    `json:"vmid"`
 	Name   string `json:"name"`
 	Status string `json:"status"`
 }
