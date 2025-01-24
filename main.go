@@ -103,6 +103,14 @@ func getVMs(node string) ([]VM, error) {
 	return vms, nil
 }
 
+func getLXC(node string) ([]VM, error) {
+    var lxc []VM
+    if err := fetchProxmoxData("/nodes/"+node+"/lxc", &lxc); err != nil {
+        return nil, err
+    }
+    return lxc, nil
+}
+
 func statusHandler(w http.ResponseWriter, r *http.Request) {
 	nodes, err := getNodes()
 	if err != nil {
@@ -134,22 +142,50 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		running := 0
-		total := len(vms)
+		vmsRunning := 0
+		vmsTotal := len(vms)
 		for _, vm := range vms {
 			if vm.Status == "running" {
-				running++
+				vmsRunning++
 			}
 		}
+
+		lxc, err := getLXC(node.Node)
+		if err != nil {
+		    log.Printf("Erreur lors de la récupération des LXC pour le nœud %s : %v", node.Node, err)
+		    continue
+        }
+
+        lxcRunning := 0
+        lxcTotal := len(lxc)
+        for _, lxc := range lxc {
+            if lxc.Status == "running" {
+                lxcRunning++
+            }
+        }
 
 		metrics = append(metrics, map[string]interface{}{
 			"node":        node.Node,
 			"cpu_usage":   status.CPU * 100,
 			"ram_usage":   float64(status.RAM.Used) / float64(status.RAM.Total) * 100,
-			"vms_running": running,
-			"vms_stopped": total - running,
-			"vms_total":   total,
-			"vms_ratio_up": (float64(running) / float64(total)) * 100,
+			"vms_running": vmsRunning,
+			"vms_stopped": vmsTotal - vmsRunning,
+			"vms_total":   vmsTotal,
+            "vms_ratio_up": func() float64 {
+                if vmsTotal > 0 {
+                    return (float64(vmsRunning) / float64(vmsTotal)) * 100
+                }
+                return 0
+            }(),
+    		"lxc_running": lxcRunning,
+			"lxc_stopped": lxcTotal - lxcRunning,
+			"lxc_total":   lxcTotal,
+			"lxc_ratio_up": func() float64 {
+			    if lxcTotal > 0 {
+                    return (float64(lxcRunning) / float64(lxcTotal)) * 100
+                }
+                return 0
+            }
 		})
 	}
 
