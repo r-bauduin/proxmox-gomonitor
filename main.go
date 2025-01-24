@@ -72,7 +72,6 @@ func fetchProxmoxData(endpoint string, target interface{}) error {
 	log.Printf("Réponse brute : %s", string(body))
 
 	var response APIResponse
-	response.Data = body
 	if err := json.Unmarshal(body, &response); err != nil {
 		return fmt.Errorf("erreur lors du parsing JSON : %v", err)
 	}
@@ -109,6 +108,14 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Erreur lors de la récupération des nœuds", http.StatusInternalServerError)
 		log.Printf("Erreur lors de la récupération des nœuds : %v", err)
+		return
+	}
+
+	if len(nodes) == 0 {
+		// Aucun nœud trouvé
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("[]"))
 		return
 	}
 
