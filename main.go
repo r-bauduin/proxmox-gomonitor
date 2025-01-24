@@ -185,9 +185,10 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
                     return (float64(lxcRunning) / float64(lxcTotal)) * 100
                 }
                 return 0
-            }
-		})
-	}
+            }(),
+        })
+    }
+
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(metrics); err != nil {
