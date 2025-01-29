@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"crypto/tls"
+	"syscall"
 )
 
 const (
@@ -111,6 +112,17 @@ func getLXC(node string) ([]VM, error) {
     return lxc, nil
 }
 
+func getSystemDiskUsage() float64 {
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs("/", &stat); err != nil {
+		log.Printf("Erreur lors de la récupération de l'espace disque : %v", err)
+		return 0
+	}
+	used := stat.Blocks - stat.Bfree
+	usagePercent := (float64(used) / float64(stat.Blocks)) * 100
+	return usagePercent
+}
+
 func statusHandler(w http.ResponseWriter, r *http.Request) {
 	nodes, err := getNodes()
 	if err != nil {
@@ -128,6 +140,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metrics := []map[string]interface{}{}
+	systemDiskUsage := getSystemDiskUsage()
 
 	for _, node := range nodes {
 		status, err := getNodeStatus(node.Node)
@@ -186,6 +199,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
                 }
                 return 0
             }(),
+            "system_disk_usage": systemDiskUsage,
         })
     }
 
